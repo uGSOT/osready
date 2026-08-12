@@ -18,7 +18,22 @@ TEST_SIGNALS = [
     "test",  # a test/ folder (some projects use singular)
     "pytest.ini",
     "conftest.py",
+    "pyproject.toml",  # check for [tool.pytest] section inside
 ]
+
+
+def _has_pytest_config_in_pyproject(repo_path: str) -> bool:
+    """Check if pyproject.toml contains a [tool.pytest] section."""
+    pyproject_path = os.path.join(repo_path, "pyproject.toml")
+    if not os.path.isfile(pyproject_path):
+        return False
+    try:
+        import tomllib
+        with open(pyproject_path, "rb") as f:
+            data = tomllib.load(f)
+        return "tool" in data and "pytest" in data["tool"]
+    except Exception:
+        return False
 
 
 def check_tests_exist(repo_path: str) -> CheckResult:
@@ -29,7 +44,16 @@ def check_tests_exist(repo_path: str) -> CheckResult:
     top_level_entries = os.listdir(repo_path)
 
     for signal in TEST_SIGNALS:
-        if signal in top_level_entries:
+        if signal == "pyproject.toml":
+            # Special handling: check for [tool.pytest] section
+            if _has_pytest_config_in_pyproject(repo_path):
+                return CheckResult(
+                    name="Tests present",
+                    passed=True,
+                    message="Found pyproject.toml with [tool.pytest] section.",
+                    severity="low",
+                )
+        elif signal in top_level_entries:
             return CheckResult(
                 name="Tests present",
                 passed=True,
