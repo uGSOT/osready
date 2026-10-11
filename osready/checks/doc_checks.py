@@ -47,6 +47,7 @@ def check_readme_exists(repo_path: str) -> CheckResult:
         severity="medium",
     )
 
+
 def check_license_exists(repo_path: str) -> CheckResult:
     """
     Looks in the top level of the repo for any file matching one of
@@ -72,7 +73,34 @@ def check_license_exists(repo_path: str) -> CheckResult:
         severity="medium",
     )
 
+
+def check_contributing_exists(repo_path: str) -> CheckResult:
+    """
+    Checks whether CONTRIBUTING.md exists in the top level of the repo.
+    """
+    filename = "CONTRIBUTING.md"
+
+    if os.path.isfile(os.path.join(repo_path, filename)):
+        return CheckResult(
+            name="CONTRIBUTING.md present",
+            passed=True,
+            message=f"Found {filename}.",
+            severity="low",
+        )
+
+    return CheckResult(
+        name="CONTRIBUTING.md present",
+        passed=False,
+        message=(
+            "No CONTRIBUTING.md file found. Add one to explain how "
+            "contributors can report issues and submit pull requests."
+        ),
+        severity="low",
+    )
+
+
 CHECKS = [
     check_readme_exists,
     check_license_exists,
+    check_contributing_exists,
 ]
