@@ -82,10 +82,50 @@ def _read_git_config(repo_path: str, key: str) -> str:
     except subprocess.CalledProcessError:
         return ""
 
+def check_no_uncommitted_changes(repo_path: str) -> CheckResult:
+    """
+    Checks whether the Git working tree has uncommitted changes.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=repo_path,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+
+        if not result.stdout.strip():
+            return CheckResult(
+                name="No uncommitted changes",
+                passed=True,
+                message="Working tree is clean.",
+                severity="low",
+            )
+
+        return CheckResult(
+            name="No uncommitted changes",
+            passed=False,
+            message=(
+                "Uncommitted changes detected. Commit or stash your "
+                "changes before proceeding."
+            ),
+            severity="low",
+        )
+
+    except (subprocess.CalledProcessError, OSError):
+        return CheckResult(
+            name="No uncommitted changes",
+            passed=False,
+            message="Unable to determine Git working tree status.",
+            severity="low",
+        )
+
 
 # Every check function in this file must be listed here.
 # The rest of the app loops over this list — it never calls
 # check_git_identity() by name directly.
 CHECKS = [
     check_git_identity,
+    check_no_uncommitted_changes
 ]
