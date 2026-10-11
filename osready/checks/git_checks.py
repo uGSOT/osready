@@ -82,10 +82,45 @@ def _read_git_config(repo_path: str, key: str) -> str:
     except subprocess.CalledProcessError:
         return ""
 
+def check_remote_origin_exists(repo_path: str) -> CheckResult:
+    """
+    Checks whether the repository has any configured Git remotes
+    by running `git remote -v`.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "remote", "-v"],
+            cwd=repo_path,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        if result.stdout.strip():
+            return CheckResult(
+                name="Git remote configured",
+                passed=True,
+                message="Found configured Git remote(s).",
+                severity="medium",
+            )
+
+    except OSError:
+        pass
+
+    return CheckResult(
+        name="Git remote configured",
+        passed=False,
+        message=(
+            "No Git remotes found. Add a remote using "
+            "git remote add origin <repository-url>."
+        ),
+        severity="medium",
+    )
 
 # Every check function in this file must be listed here.
 # The rest of the app loops over this list — it never calls
 # check_git_identity() by name directly.
 CHECKS = [
     check_git_identity,
+    check_remote_origin_exists
 ]
