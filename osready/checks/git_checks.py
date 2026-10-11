@@ -82,10 +82,44 @@ def _read_git_config(repo_path: str, key: str) -> str:
     except subprocess.CalledProcessError:
         return ""
 
+def check_not_on_main_branch(repo_path: str) -> CheckResult:
+    """Checks that the current branch is not main or master."""
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            cwd=repo_path,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        branch = result.stdout.strip()
+
+        if branch not in ("main", "master"):
+            return CheckResult(
+                name="Not on main branch",
+                passed=True,
+                message=f"Current branch is '{branch}'.",
+                severity="medium",
+            )
+
+    except (subprocess.CalledProcessError, OSError):
+        pass
+
+    return CheckResult(
+        name="Not on main branch",
+        passed=False,
+        message=(
+            "You are on the main or master branch, or the current "
+            "branch could not be determined. Create a feature branch "
+            "before making changes."
+        ),
+        severity="medium",
+    )
 
 # Every check function in this file must be listed here.
 # The rest of the app loops over this list — it never calls
 # check_git_identity() by name directly.
 CHECKS = [
     check_git_identity,
+    check_not_on_main_branch
 ]
