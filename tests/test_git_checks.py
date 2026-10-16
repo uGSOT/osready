@@ -38,3 +38,7 @@ def test_fails_when_identity_is_missing(tmp_path):
 
     assert result.passed is False
     assert "user.name" in result.message or "user.email" in result.message
+
+
+
+#idjvahvjfjajaljfajdf
