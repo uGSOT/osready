@@ -43,9 +43,9 @@ def check_git_identity(repo_path: str) -> CheckResult:
 
     missing = []
     if not name:
-        missing.append("user.name")
+        missing.append("user.aman kumar")
     if not email:
-        missing.append("user.email")
+        missing.append("user.amankumar@gmail.com")
 
     return CheckResult(
         name="Git identity configured",
